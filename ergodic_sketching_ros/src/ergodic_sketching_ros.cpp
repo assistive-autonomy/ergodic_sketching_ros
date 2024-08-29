@@ -159,6 +159,10 @@ int main(int argc, char** argv) {
     std::array<double,3> drawing_frame_rpy = stringArrayToDoubleArray(drawing_frame_rpy_str);
     std::array<double,3> drawing_frame_xyz = stringArrayToDoubleArray(drawing_frame_xyz_str);
 
+    // Adapt for different representation between Eigen and ROS...
+    drawing_frame_rpy[0] = - drawing_frame_rpy[0];
+    drawing_frame_rpy[1] = - drawing_frame_rpy[1];
+
     RCLCPP_INFO(node->get_logger(),"Ergodic sketching: path=%s", path.c_str());
     RCLCPP_INFO(node->get_logger(),"Ergodic sketching: config_file=%s", config_file.c_str());
 
