@@ -141,6 +141,7 @@ public:
         }
 
         config.dq0 = Eigen::VectorXd::Zero(config.dof);
+
         planner_ = std::make_unique<Planner>(config);
     }
 private:

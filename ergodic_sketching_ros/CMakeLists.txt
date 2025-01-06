@@ -62,6 +62,26 @@ ament_target_dependencies( ergodic_sketching_ros
     geometry_msgs
 )
 
+add_executable(postprocessing_ros src/postprocess_ros.cpp)
+
+target_include_directories(postprocessing_ros
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  PRIVATE
+    ${EIGEN3_INCLUDE_DIRS}
+)
+
+ament_target_dependencies( postprocessing_ros 
+    rclcpp
+    ergodic_sketching
+    sackmesser
+    Eigen3
+    ergodic_sketching_msgs
+    nav_msgs
+    geometry_msgs
+)
+
 add_library(ilqr_planner_ros SHARED src/ilqr_planner_ros.cpp src/Planner.cpp include/ergodic_sketching_ros/Planner.hpp)
 target_include_directories(ilqr_planner_ros
 	PRIVATE
@@ -84,6 +104,11 @@ ament_target_dependencies( ilqr_planner_ros
 rclcpp_components_register_node(ilqr_planner_ros PLUGIN "PlannerActionServer" EXECUTABLE planner_action_server)
 
 install(TARGETS ergodic_sketching_ros
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+
+install(TARGETS postprocessing_ros
   DESTINATION lib/${PROJECT_NAME}
 )
 
