@@ -10,7 +10,7 @@
 #include <array>
 #include <memory>
 
-#include <cv_bridge/cv_bridge.hpp>
+#include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include "rclcpp/rclcpp.hpp"
