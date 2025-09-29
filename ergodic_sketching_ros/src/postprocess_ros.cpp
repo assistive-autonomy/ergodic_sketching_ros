@@ -10,7 +10,6 @@
 #include <array>
 #include <memory>
 
-#include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include "rclcpp/rclcpp.hpp"
@@ -23,42 +22,27 @@
 #include <ergodic_sketching/RobotDrawing.hpp>
 #include <ergodic_sketching/TrajectoryUtils.hpp>
 
-#include <ergodic_sketching_msgs/srv/sketch.hpp>
+#include <ergodic_sketching_msgs/srv/post_process.hpp>
 
 sackmesser::runtime::Interface::Ptr interface;
-std::unique_ptr<sketching::ErgodicSketching> ergodic_sketcher;
 std::unique_ptr<sketching::RobotDrawing> robot_drawing;
 std::string base_frame = "world";
 std::shared_ptr<rclcpp::Node> node;
 
-void sketch(const std::shared_ptr<ergodic_sketching_msgs::srv::Sketch::Request>& req, std::shared_ptr<ergodic_sketching_msgs::srv::Sketch::Response> resp) {
+void postprocess(const std::shared_ptr<ergodic_sketching_msgs::srv::PostProcess::Request>& req, std::shared_ptr<ergodic_sketching_msgs::srv::PostProcess::Response> resp) {
     RCLCPP_INFO(node->get_logger(),"Sketch request received");
-    cv_bridge::CvImagePtr image_ptr;
-    try {
-        image_ptr = cv_bridge::toCvCopy(req->image, sensor_msgs::image_encodings::BGR8);
-    } catch (cv_bridge::Exception& e) {
-        RCLCPP_ERROR(node->get_logger(),"cv_bridge_exception: %s", e.what());
-        return;
-    }
-
-    std::vector<sketching::ErgodicControl::Agent::Path> paths = ergodic_sketcher->sketch(image_ptr->image);
-
-    std::vector<Eigen::Matrix<double, 7, 1>> path_7d = robot_drawing->process(paths, robot_drawing->getDrawingZonesTransforms()[req->drawing_zone_idx.data]);
     
-    for(auto const& stroke : paths){
-        nav_msgs::msg::Path stroke_ros;
-        stroke_ros.header.stamp = node->get_clock()->now();
-
-        for(auto const& point: stroke){
-            geometry_msgs::msg::PoseStamped point_ros;
-            point_ros.header.stamp = node->get_clock()->now();
-            point_ros.pose.position.x = point(0);
-            point_ros.pose.position.y = point(1);
-            stroke_ros.poses.push_back(point_ros);
+    std::vector<std::vector<Eigen::Vector2d>> strokes;
+    for(auto const& ros_stroke: req->strokes){
+        std::vector<Eigen::Vector2d> stroke;
+        for(auto const& ros_point: ros_stroke.poses){
+            Eigen::Vector2d point(ros_point.pose.position.x,ros_point.pose.position.y);
+            stroke.push_back(point);
         }
-
-        resp->strokes.push_back(stroke_ros);
+        strokes.push_back(stroke);
     }
+
+    std::vector<Eigen::Matrix<double, 7, 1>> path_7d = robot_drawing->process(strokes, robot_drawing->getDrawingZonesTransforms()[req->drawing_zone_idx.data]);
 
     resp->path.header.stamp = node->get_clock()->now();
     resp->path.header.frame_id = base_frame;
@@ -167,12 +151,11 @@ int main(int argc, char** argv) {
     RCLCPP_INFO(node->get_logger(),"Ergodic sketching: config_file=%s", config_file.c_str());
 
     interface = std::make_shared<sackmesser::runtime::Interface>(path, config_file);
-    ergodic_sketcher = std::make_unique<sketching::ErgodicSketching>(interface);
     robot_drawing = std::make_unique<sketching::RobotDrawing>(interface, "ergodic_sketching/robot_drawing/",drawing_frame_xyz,drawing_frame_rpy);
 
-    rclcpp::Service<ergodic_sketching_msgs::srv::Sketch>::SharedPtr service = node->create_service<ergodic_sketching_msgs::srv::Sketch>(
-        "sketch",
-        &sketch
+    rclcpp::Service<ergodic_sketching_msgs::srv::PostProcess>::SharedPtr service = node->create_service<ergodic_sketching_msgs::srv::PostProcess>(
+        "post_process",
+        &postprocess
     );
 
     rclcpp::spin(node);

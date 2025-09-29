@@ -36,37 +36,28 @@ ergodic_sketching:
     robot_drawing:
         signature_width_ratio: 0.3
         dt: 0.01
-        sheet_x_size: 0.28
-        sheet_y_size: 0.4
-        sheet_margin_x: 0.02
+        sheet_x_size: 0.34
+        sheet_y_size: 0.34
+        sheet_margin_x: 0.025
         sheet_margin_y: 0.025
         init_phase_length: 600
-        max_cart_vel: 0.035
+        max_cart_vel: 0.075
         offset: 0.015
 
         num_drawing_zone: 1
 
         drawing_zone_1:
-            transform:
-                rpy:
-                    r: 0
-                    p: -0.785
-                    y: -1.5708
-                position:
-                    x: 0.35
-                    y: 0.15
-                    z: 0.3
             drawing_orientation:
-                w: 0.3909
-                x: -0.0007
-                y: 0.920427
-                z: 0.00042
+                w: -0.1130
+                x: 0.4068
+                y: 0.9045
+                z: 0.0584
 
     pipelines:
         - inner
 
     inner:
-        num_strokes: 5
+        num_strokes: 70
         image_processing:
             processors:
                 - histogram_normalization
