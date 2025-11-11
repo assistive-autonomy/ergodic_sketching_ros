@@ -19,7 +19,6 @@ find_package(nav_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 # To generate messages and services
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "action/Planner.action"
   "srv/Sketch.srv"
   "srv/PostProcess.srv"
   DEPENDENCIES sensor_msgs nav_msgs trajectory_msgs # Add packages that above messages depend on, in this case geometry_msgs for Sphere.msg

@@ -19,7 +19,7 @@
 namespace sketching {
 std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::saturate_speed(const std::vector<Eigen::Matrix<double, 7, 1>>& trajectory, const double& max_speed, const double& dt) {
     std::vector<Eigen::Matrix<double, 7, 1>> trajectory_saturated;
-    for (unsigned idx = 0; idx < trajectory.size() - 1; idx++) {
+    for (size_t idx = 0; idx < trajectory.size() - 1; idx++) {
         trajectory_saturated.push_back(trajectory.at(idx));
 
         Eigen::Vector3d delta_traj = trajectory.at(idx + 1).head(3) - trajectory.at(idx).head(3);
@@ -27,14 +27,14 @@ std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::saturate_speed(const s
         double speed = delta_traj.norm() / dt;
 
         if (speed > max_speed) {
-            int nb_kp_needed = static_cast<int>(std::ceil(speed / max_speed));
+            size_t nb_kp_needed = static_cast<size_t>(std::ceil(speed / max_speed));
 
             Eigen::Vector3d delta_traj_step = delta_traj / nb_kp_needed;
             Eigen::Vector4d orientation = trajectory.at(idx).tail(4);
             Eigen::Vector4d orientation_p1 = trajectory.at(idx + 1).tail(4);
 
-            for (unsigned idx_saturate = 0; idx_saturate < nb_kp_needed; idx_saturate++) {
-                double t = (idx_saturate + 1.0) / (nb_kp_needed + 1.0);
+            for (size_t idx_saturate = 0; idx_saturate < nb_kp_needed; idx_saturate++) {
+                double t = (static_cast<double>(idx_saturate) + 1.0) / (static_cast<double>(nb_kp_needed) + 1.0);
                 Eigen::Vector4d orientation_t = TrajectoryUtils::quaternionSlerp(orientation, orientation_p1, t);
 
                 Eigen::Matrix<double, 7, 1> state_saturated_t;
@@ -50,23 +50,23 @@ std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::saturate_speed(const s
 }
 
 void TrajectoryUtils::min_max_norm_1d(std::vector<Eigen::Vector3d>& path_3d, const Eigen::Vector3d& max_value, const Eigen::Vector3d& min_value) {
-    for (int i = 0; i < path_3d.size(); i++) {
+    for (size_t i = 0; i < path_3d.size(); i++) {
         path_3d.at(i) = (path_3d.at(i) - min_value).array() / (max_value - min_value).array();
     }
 }
 
 void TrajectoryUtils::min_max_norm(std::vector<std::vector<Eigen::Vector3d>>& paths_3d, const Eigen::Vector3d& max_value, const Eigen::Vector3d& min_value) {
-    for (int i = 0; i < paths_3d.size(); i++) {
+    for (size_t i = 0; i < paths_3d.size(); i++) {
         TrajectoryUtils::min_max_norm_1d(paths_3d.at(i), max_value, min_value);
     }
 }
 
 std::vector<std::vector<Eigen::Vector3d>> TrajectoryUtils::optimize_trajectory_list(std::vector<std::vector<Eigen::Vector3d>>& trajectories, const int& start_idx) {
     std::vector<Eigen::Vector3d> traj_to_process = trajectories.at(start_idx);
-    int index = start_idx;
+    size_t index = start_idx;
 
-    int nb_processed = 1;
-    int nb_trajectories = trajectories.size();
+    size_t nb_processed = 1;
+    size_t nb_trajectories = trajectories.size();
 
     std::vector<std::vector<Eigen::Vector3d>> trajectories_sorted;
 
@@ -75,9 +75,9 @@ std::vector<std::vector<Eigen::Vector3d>> TrajectoryUtils::optimize_trajectory_l
         Eigen::Vector3d ending_point = traj_to_process.at(traj_to_process.size() - 1);
 
         double min_distance = std::numeric_limits<double>::max();
-        unsigned min_index = 0;
+        size_t min_index = 0;
 
-        for (unsigned i = 0; i < trajectories.size(); i++) {
+        for (size_t i = 0; i < trajectories.size(); i++) {
             std::vector<Eigen::Vector3d> traj = trajectories.at(i);
             double distance = (traj.at(0) - ending_point).norm();
 
@@ -143,7 +143,7 @@ std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::trajectory_list_to_con
                                                                                         const int& min_kp) {
     std::vector<Eigen::Matrix<double, 7, 1>> trajectory;
 
-    for (int traj_idx = 1; traj_idx < trajectories.size(); traj_idx++) {
+    for (size_t traj_idx = 1; traj_idx < trajectories.size(); traj_idx++) {
         std::vector<Eigen::Vector3d> traj_t = trajectories.at(traj_idx);
         std::vector<Eigen::Vector3d> traj_tm1 = trajectories.at(traj_idx - 1);
 
@@ -173,7 +173,7 @@ std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::trajectory_list_to_con
 
         std::vector<Eigen::Matrix<double, 7, 1>> gap_trajectory_full;
 
-        for (int i = 0; i < z_evolution.size(); i++) {
+        for (size_t i = 0; i < z_evolution.size(); i++) {
             Eigen::Matrix<double, 7, 1> gap_t;
             Eigen::Vector3d gap_pos = xy_evolution.at(i) + z_evolution.at(i) * normal_z;
             gap_t << gap_pos, orientation;
@@ -192,7 +192,7 @@ std::vector<Eigen::Matrix<double, 7, 1>> TrajectoryUtils::trajectory_list_to_con
 }
 
 void TrajectoryUtils::apply_transformation_to_trajectory(std::vector<Eigen::Vector3d>& trajectory, const Eigen::Matrix4d& transform) {
-    for (int i = 0; i < trajectory.size(); i++) {
+    for (size_t i = 0; i < trajectory.size(); i++) {
         trajectory.at(i) = transform.topLeftCorner<3, 3>() * trajectory.at(i) + transform.rightCols<1>().head<3>();
         // TODO: Do the same for orientation
     }
@@ -207,7 +207,7 @@ void TrajectoryUtils::interp_between_two_points_pos(std::vector<Eigen::Vector3d>
 
 std::vector<Eigen::Vector3d> TrajectoryUtils::splineInterpolationPosition(const std::vector<Eigen::Vector3d>& points, const std::vector<double>& timesteps, const int& nb_points) {
     std::vector<Eigen::Vector3d> points_up;
-    int num_point_down = points.size();
+    size_t num_point_down = points.size();
 
     Eigen::VectorXd x = Eigen::VectorXd::Zero(num_point_down);
     Eigen::VectorXd y = Eigen::VectorXd::Zero(num_point_down);
@@ -255,9 +255,9 @@ std::vector<Eigen::Vector4d> TrajectoryUtils::generateQuaternionTrajectory(const
     for (int i = 0; i <= nb_points; i++) {
         double t = ((double)i) / nb_points;
         double min_dist = 1.0;
-        int anchor = 1;
+        size_t anchor = 1;
 
-        for (int j = 1; j < timesteps.size(); j++) {
+        for (size_t j = 1; j < timesteps.size(); j++) {
             double dist = timesteps.at(j) - t;
             if (dist >= 0 && dist < min_dist) {
                 min_dist = dist;
