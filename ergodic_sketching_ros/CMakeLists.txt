@@ -30,7 +30,6 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(ergodic_sketching REQUIRED)
-find_package(ilqr_planner REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(sackmesser REQUIRED)
@@ -82,40 +81,17 @@ ament_target_dependencies( postprocessing_ros
     geometry_msgs
 )
 
-add_library(ilqr_planner_ros SHARED src/ilqr_planner_ros.cpp src/Planner.cpp include/ergodic_sketching_ros/Planner.hpp)
-target_include_directories(ilqr_planner_ros
-	PRIVATE
-  	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  PRIVATE
-    ${EIGEN3_INCLUDE_DIRS}
-)
-
-ament_target_dependencies( ilqr_planner_ros 
-    rclcpp
-    rclcpp_action
-    rclcpp_components
-    ilqr_planner
-    Eigen3
-    ergodic_sketching_msgs
-    trajectory_msgs
-)
-
-rclcpp_components_register_node(ilqr_planner_ros PLUGIN "PlannerActionServer" EXECUTABLE planner_action_server)
-
 install(TARGETS ergodic_sketching_ros
   DESTINATION lib/${PROJECT_NAME}
 )
-
 
 install(TARGETS postprocessing_ros
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(TARGETS ilqr_planner_ros
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+install(PROGRAMS
+  scripts/sketcher_client.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY

@@ -17,6 +17,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+
 # To generate messages and services
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/Sketch.srv"
