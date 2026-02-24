@@ -21,6 +21,7 @@ SPDX-License-Identifier: GPL-3.0-only
   <depend>eigen</depend>
   <depend>libopencv-dev</depend>
   <depend>yaml-cpp</depend>
+  <depend>boost</depend>
 
   <export>
     <build_type>cmake</build_type>
