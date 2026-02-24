@@ -19,7 +19,7 @@ SPDX-License-Identifier: GPL-3.0-only
   <buildtool_depend>cmake</buildtool_depend>
 
   <depend>eigen</depend>
-  <depend>opencv</depend>
+  <depend>opencv2</depend>
 
   <export>
     <build_type>cmake</build_type>
